@@ -91,6 +91,11 @@
             margin-bottom: 6px;
         }
 
+        .required-marker {
+            color: #c62828;
+            margin-left: 2px;
+        }
+
         input,
         select {
             width: 100%;
@@ -125,6 +130,15 @@
 
         .radio-group input {
             width: auto;
+        }
+
+        .reason-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .reason-list label {
+            align-items: flex-start;
         }
 
         .conditional {
@@ -208,6 +222,9 @@
             Enter applicant information below. The system maps the submitted data
             directly into the official IRS W-7 PDF form fields.
         </p>
+        <p class="note">
+            Fields marked with <span class="required-marker">*</span> are required.
+        </p>
     </div>
 
     <form method="post" action="/generate">
@@ -222,15 +239,16 @@
 
                 <div class="grid-2">
                     <div>
-                        <label>Application Type</label>
+                        <label>Application Type <span class="required-marker">*</span></label>
 
                         <div class="radio-group">
                             <label>
                                 <input
                                     type="radio"
-                                    name="application_type"
-                                    value="new"
-                                    checked
+                                     name="application_type"
+                                     value="new"
+                                     checked
+                                     required
                                 >
                                 Apply for a new ITIN
                             </label>
@@ -238,8 +256,9 @@
                             <label>
                                 <input
                                     type="radio"
-                                    name="application_type"
-                                    value="renew"
+                                     name="application_type"
+                                     value="renew"
+                                     required
                                 >
                                 Renew an existing ITIN
                             </label>
@@ -247,25 +266,49 @@
                     </div>
 
                     <div>
-                        <label>Reason for submitting Form W-7</label>
+                        <label>Reason for submitting Form W-7 <span class="required-marker">*</span></label>
 
-                        <select name="reason" id="reason">
-                            <option value="a">a - Tax treaty benefit</option>
-                            <option value="b" selected>b - Filing a U.S. federal tax return</option>
-                            <option value="c">c - U.S. resident alien filing return</option>
-                            <option value="d">d - Dependent of U.S. citizen/resident alien</option>
-                            <option value="e">e - Spouse of U.S. citizen/resident alien</option>
-                            <option value="f">f - Student, professor or researcher</option>
-                            <option value="g">g - Dependent/spouse holding U.S. visa</option>
-                            <option value="h">h - Other</option>
-                        </select>
+                        <div class="radio-group reason-list">
+                            <label>
+                                <input type="radio" name="reason" value="a" required>
+                                a - Tax treaty benefit
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="b" checked required>
+                                b - Filing a U.S. federal tax return
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="c" required>
+                                c - U.S. resident alien filing return
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="d" required>
+                                d - Dependent of U.S. citizen/resident alien
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="e" required>
+                                e - Spouse of U.S. citizen/resident alien
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="f" required>
+                                f - Student, professor or researcher
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="g" required>
+                                g - Dependent/spouse holding U.S. visa
+                            </label>
+                            <label>
+                                <input type="radio" name="reason" value="h" required>
+                                h - Other
+                            </label>
+                        </div>
                     </div>
                 </div>
 
                 <div id="reason-d-fields" class="conditional hidden">
                     <div class="grid">
                         <div class="full">
-                            <label>Relationship</label>
+                            <label>Relationship <span class="required-marker">*</span></label>
                             <input
                                 type="text"
                                 name="reason_d_relationship"
@@ -274,10 +317,10 @@
                     </div>
                 </div>
 
-                <div id="reason-e-fields" class="conditional hidden">
+                <div id="reason-de-fields" class="conditional hidden">
                     <div class="grid">
                         <div>
-                            <label>Name</label>
+                            <label>Name <span class="required-marker">*</span></label>
                             <input
                                 type="text"
                                 name="reason_e_name"
@@ -285,7 +328,7 @@
                         </div>
 
                         <div>
-                            <label>SSN / ITIN</label>
+                            <label>SSN / ITIN <span class="required-marker">*</span></label>
                             <input
                                 type="text"
                                 name="reason_e_ssn_itin"
@@ -294,29 +337,51 @@
                     </div>
                 </div>
 
+                <div id="reason-f-exception-field" class="conditional hidden">
+                    <div class="radio-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="reason_f_exception"
+                                value="yes"
+                            >
+                            Claiming an exception for reason f (also complete reason h)
+                        </label>
+                    </div>
+                </div>
+
                 <div id="reason-h-fields" class="conditional hidden">
-                    <label>Other reason details</label>
+                    <label>
+                        Reason h exception details <span class="required-marker">*</span>
+                    </label>
+                    <p id="reason-h-guidance" class="note"></p>
                     <input
                         type="text"
                         name="reason_h_details"
                     >
                 </div>
 
-                <div class="grid-2" style="margin-top:16px;">
-                    <div>
-                        <label>Treaty Country</label>
-                        <input
-                            type="text"
-                            name="treaty_country"
-                        >
-                    </div>
+                <div id="treaty-fields" class="conditional hidden">
+                    <div class="grid-2">
+                        <div>
+                            <label>
+                                Treaty Country <span class="required-marker">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="treaty_country"
+                            >
+                        </div>
 
-                    <div>
-                        <label>Treaty Article Number</label>
-                        <input
-                            type="text"
-                            name="treaty_article"
-                        >
+                        <div>
+                            <label>
+                                Treaty Article Number <span class="required-marker">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="treaty_article"
+                            >
+                        </div>
                     </div>
                 </div>
 
@@ -333,7 +398,7 @@
 
                 <div class="grid">
                     <div>
-                        <label>First Name</label>
+                        <label>First Name <span class="required-marker">*</span></label>
                         <input
                             type="text"
                             name="first_name"
@@ -350,7 +415,7 @@
                     </div>
 
                     <div>
-                        <label>Last Name</label>
+                        <label>Last Name <span class="required-marker">*</span></label>
                         <input
                             type="text"
                             name="last_name"
@@ -397,18 +462,20 @@
             <div class="section-body grid-2">
 
                 <div>
-                    <label>Street Address</label>
+                    <label>Street Address <span class="required-marker">*</span></label>
                     <input
-                        type="text"
-                        name="mailing_street"
+                         type="text"
+                         name="mailing_street"
+                         required
                     >
                 </div>
 
                 <div>
-                    <label>City / State / Province / Country / ZIP</label>
+                    <label>City / State / Province / Country / ZIP <span class="required-marker">*</span></label>
                     <input
-                        type="text"
-                        name="mailing_city_country_postal"
+                         type="text"
+                         name="mailing_city_country_postal"
+                         required
                     >
                 </div>
 
@@ -453,40 +520,44 @@
                 <div class="grid">
 
                     <div>
-                        <label>Date of Birth</label>
+                        <label>Date of Birth <span class="required-marker">*</span></label>
                         <input
-                            type="date"
-                            name="date_of_birth"
+                             type="date"
+                             name="date_of_birth"
+                             required
                         >
                     </div>
 
                     <div>
-                        <label>Country of Birth</label>
+                        <label>Country of Birth <span class="required-marker">*</span></label>
                         <input
-                            type="text"
-                            name="country_of_birth"
+                             type="text"
+                             name="country_of_birth"
+                             required
                         >
                     </div>
 
                     <div>
-                        <label>City and State / Province</label>
+                        <label>City and State / Province <span class="required-marker">*</span></label>
                         <input
-                            type="text"
-                            name="birth_city_state"
+                             type="text"
+                             name="birth_city_state"
+                             required
                         >
                     </div>
 
                 </div>
 
                 <div style="margin-top:16px;">
-                    <label>Gender</label>
+                    <label>Gender <span class="required-marker">*</span></label>
 
                     <div class="radio-group">
                         <label>
                             <input
                                 type="radio"
-                                name="gender"
-                                value="male"
+                                 name="gender"
+                                 value="male"
+                                 required
                             >
                             Male
                         </label>
@@ -494,8 +565,9 @@
                         <label>
                             <input
                                 type="radio"
-                                name="gender"
-                                value="female"
+                                 name="gender"
+                                 value="female"
+                                 required
                             >
                             Female
                         </label>
@@ -514,10 +586,11 @@
             <div class="section-body grid">
 
                 <div>
-                    <label>Country / Countries of Citizenship</label>
+                    <label>Country / Countries of Citizenship <span class="required-marker">*</span></label>
                     <input
-                        type="text"
-                        name="citizenship"
+                         type="text"
+                         name="citizenship"
+                         required
                     >
                 </div>
 
@@ -549,16 +622,17 @@
             <div class="section-body">
 
                 <div>
-                    <label>Document Type</label>
+                    <label>Document Type <span class="required-marker">*</span></label>
 
                     <div class="radio-group">
 
                         <label>
                             <input
                                 type="radio"
-                                name="document_type"
-                                value="passport"
-                                checked
+                                 name="document_type"
+                                 value="passport"
+                                 checked
+                                 required
                             >
                             Passport
                         </label>
@@ -566,8 +640,9 @@
                         <label>
                             <input
                                 type="radio"
-                                name="document_type"
-                                value="driver_license"
+                                 name="document_type"
+                                 value="driver_license"
+                                 required
                             >
                             Driver's License / State ID
                         </label>
@@ -575,8 +650,9 @@
                         <label>
                             <input
                                 type="radio"
-                                name="document_type"
-                                value="uscis"
+                                 name="document_type"
+                                 value="uscis"
+                                 required
                             >
                             USCIS Documentation
                         </label>
@@ -584,8 +660,9 @@
                         <label>
                             <input
                                 type="radio"
-                                name="document_type"
-                                value="other"
+                                 name="document_type"
+                                 value="other"
+                                 required
                             >
                             Other
                         </label>
@@ -596,7 +673,7 @@
                 <div id="other-document-field"
                      class="conditional hidden">
 
-                    <label>Other Document Description</label>
+                    <label>Other Document Description <span class="required-marker">*</span></label>
 
                     <input
                         type="text"
@@ -607,26 +684,29 @@
                 <div class="grid" style="margin-top:16px;">
 
                     <div>
-                        <label>Issued By</label>
+                        <label>Issued By <span class="required-marker">*</span></label>
                         <input
-                            type="text"
-                            name="document_issued_by"
+                             type="text"
+                             name="document_issued_by"
+                             required
                         >
                     </div>
 
                     <div>
-                        <label>Document Number</label>
+                        <label>Document Number <span class="required-marker">*</span></label>
                         <input
-                            type="text"
-                            name="document_number"
+                             type="text"
+                             name="document_number"
+                             required
                         >
                     </div>
 
                     <div>
-                        <label>Expiration Date</label>
+                        <label>Expiration Date <span class="required-marker">*</span></label>
                         <input
-                            type="date"
-                            name="document_expiration_date"
+                             type="date"
+                             name="document_expiration_date"
+                             required
                         >
                     </div>
 
@@ -651,15 +731,16 @@
 
             <div class="section-body">
 
-                <label>Have you previously received an ITIN or IRSN?</label>
+                <label>Have you previously received an ITIN or IRSN? <span class="required-marker">*</span></label>
 
                 <div class="radio-group">
                     <label>
                         <input
                             type="radio"
-                            name="previous_itin_status"
-                            value="no"
-                            checked
+                             name="previous_itin_status"
+                             value="no"
+                             checked
+                             required
                         >
                         No / Don't know
                     </label>
@@ -667,8 +748,9 @@
                     <label>
                         <input
                             type="radio"
-                            name="previous_itin_status"
-                            value="yes"
+                             name="previous_itin_status"
+                             value="yes"
+                             required
                         >
                         Yes
                     </label>
@@ -678,6 +760,11 @@
                     id="previous-itin-fields"
                     class="conditional hidden"
                 >
+
+                    <label>
+                        ITIN or IRSN <span class="required-marker">*</span>
+                    </label>
+                    <p class="note">Enter at least one of the two numbers.</p>
 
                     <div class="grid-2">
 
@@ -742,7 +829,10 @@
             <div class="section-body grid">
 
                 <div>
-                    <label>Name</label>
+                    <label>
+                        Name
+                        <span class="required-marker reason-f-required hidden">*</span>
+                    </label>
                     <input
                         type="text"
                         name="institution_name"
@@ -750,7 +840,10 @@
                 </div>
 
                 <div>
-                    <label>City and State</label>
+                    <label>
+                        City and State
+                        <span class="required-marker reason-f-required hidden">*</span>
+                    </label>
                     <input
                         type="text"
                         name="institution_city_state"
@@ -758,7 +851,10 @@
                 </div>
 
                 <div>
-                    <label>Length of Stay</label>
+                    <label>
+                        Length of Stay
+                        <span class="required-marker reason-f-required hidden">*</span>
+                    </label>
                     <input
                         type="text"
                         name="length_of_stay"
@@ -779,10 +875,11 @@
                 <div class="grid-2">
 
                     <div>
-                        <label>Phone Number</label>
+                        <label>Phone Number <span class="required-marker">*</span></label>
                         <input
-                            type="text"
+                            type="tel"
                             name="phone_number"
+                            required
                         >
                     </div>
 
@@ -847,17 +944,17 @@
                 <div class="grid">
 
                     <div>
-                        <label>Date</label>
+                        <label>Phone</label>
                         <input
-                            type="date"
-                            name="agent_date"
+                            type="tel"
+                            name="agent_phone"
                         >
                     </div>
 
                     <div>
                         <label>Fax</label>
                         <input
-                            type="text"
+                            type="tel"
                             name="agent_fax"
                         >
                     </div>
@@ -922,12 +1019,30 @@
 </div>
 
 <script>
-    const reasonSelect = document.getElementById("reason");
-
+    const reasonRadios = document.querySelectorAll('input[name="reason"]');
     const reasonD = document.getElementById("reason-d-fields");
-    const reasonE = document.getElementById("reason-e-fields");
+    const reasonDE = document.getElementById("reason-de-fields");
+    const reasonFException = document.getElementById("reason-f-exception-field");
+    const reasonFExceptionInput = document.querySelector('[name="reason_f_exception"]');
     const reasonH = document.getElementById("reason-h-fields");
+    const reasonHGuidance = document.getElementById("reason-h-guidance");
+    const treatyFields = document.getElementById("treaty-fields");
     const errorBox = document.getElementById("error-box");
+    const submittedFormData = {{ form_data | default({}, true) | tojson }};
+
+    document.querySelectorAll("[name]").forEach(field => {
+        const value = submittedFormData[field.name];
+
+        if (value === undefined) {
+            return;
+        }
+
+        if (field.type === "radio" || field.type === "checkbox") {
+            field.checked = field.value === value;
+        } else {
+            field.value = value;
+        }
+    });
 
 if (errorBox) {
     document.querySelectorAll("input, select, textarea").forEach(field => {
@@ -940,7 +1055,7 @@ if (errorBox) {
         });
     });
 }
-    function clearInputs(container) {
+function clearInputs(container) {
     container.querySelectorAll("input, select, textarea").forEach(input => {
         if (input.type === "radio" || input.type === "checkbox") {
             input.checked = false;
@@ -950,36 +1065,93 @@ if (errorBox) {
     });
 }
 
+function setRequired(container, required) {
+    container.querySelectorAll("input, select, textarea").forEach(input => {
+        input.required = required;
+    });
+}
+
+function toggleRequiredMarkers(selector, visible) {
+    document.querySelectorAll(selector).forEach(marker => {
+        marker.classList.toggle("hidden", !visible);
+    });
+}
 
 function updateReasonFields() {
-    const value = reasonSelect.value;
+    const selectedReason = document.querySelector('input[name="reason"]:checked');
+    const value = selectedReason ? selectedReason.value : "";
+    const isReasonD = value === "d";
+    const isReasonDE = value === "d" || value === "e";
+    const isReasonA = value === "a";
+    const isReasonF = value === "f";
+    const requiresReasonH = isReasonA || value === "h" || (
+        isReasonF && reasonFExceptionInput.checked
+    );
+    const requiresTreaty = isReasonA || isReasonF;
 
     // Reason D
-    if (value === "d") {
+    if (isReasonD) {
         reasonD.classList.remove("hidden");
+        setRequired(reasonD, true);
     } else {
+        setRequired(reasonD, false);
         reasonD.classList.add("hidden");
         clearInputs(reasonD);
     }
 
-    // Reason E
-    if (value === "e") {
-        reasonE.classList.remove("hidden");
+    // Reasons D and E
+    if (isReasonDE) {
+        reasonDE.classList.remove("hidden");
+        setRequired(reasonDE, true);
     } else {
-        reasonE.classList.add("hidden");
-        clearInputs(reasonE);
+        setRequired(reasonDE, false);
+        reasonDE.classList.add("hidden");
+        clearInputs(reasonDE);
     }
 
-    // Reason H
-    if (value === "h") {
-        reasonH.classList.remove("hidden");
+    if (isReasonF) {
+        reasonFException.classList.remove("hidden");
     } else {
+        reasonFException.classList.add("hidden");
+        clearInputs(reasonFException);
+    }
+
+    // Reason A always includes H; reason F includes H only for an exception.
+    if (requiresReasonH) {
+        reasonH.classList.remove("hidden");
+        setRequired(reasonH, true);
+        reasonHGuidance.textContent = isReasonA
+            ? "Reason a requires reason h; both boxes will be selected in the PDF."
+            : isReasonF
+                ? "The exception request will also select reason h in the PDF."
+                : "Describe the other reason for submitting Form W-7.";
+    } else {
+        setRequired(reasonH, false);
         reasonH.classList.add("hidden");
         clearInputs(reasonH);
     }
+
+    if (requiresTreaty) {
+        treatyFields.classList.remove("hidden");
+        setRequired(treatyFields, true);
+    } else {
+        setRequired(treatyFields, false);
+        treatyFields.classList.add("hidden");
+        clearInputs(treatyFields);
+    }
+
+    document.querySelectorAll(
+        '[name="institution_name"], [name="institution_city_state"], [name="length_of_stay"]'
+    ).forEach(input => {
+        input.required = isReasonF;
+    });
+    toggleRequiredMarkers(".reason-f-required", isReasonF);
 }
 
-    reasonSelect.addEventListener("change", updateReasonFields);
+    reasonRadios.forEach(radio => {
+        radio.addEventListener("change", updateReasonFields);
+    });
+    reasonFExceptionInput.addEventListener("change", updateReasonFields);
 
     updateReasonFields();
 
@@ -999,7 +1171,9 @@ function updateReasonFields() {
 
     if (isOther) {
         otherDocumentField.classList.remove("hidden");
+        setRequired(otherDocumentField, true);
     } else {
+        setRequired(otherDocumentField, false);
         otherDocumentField.classList.add("hidden");
         clearInputs(otherDocumentField);
     }
@@ -1024,6 +1198,20 @@ function updateReasonFields() {
         document.getElementById(
             "previous-itin-fields"
         );
+    const itinInput = document.querySelector('[name="itin"]');
+    const irsnInput = document.querySelector('[name="irsn"]');
+
+    function validatePreviousItin() {
+        const selected = document.querySelector(
+            'input[name="previous_itin_status"]:checked'
+        );
+        const requiresNumber = selected && selected.value === "yes";
+        const missingNumber = requiresNumber && !itinInput.value && !irsnInput.value;
+
+        itinInput.setCustomValidity(
+            missingNumber ? "Enter either an ITIN or IRSN." : ""
+        );
+    }
 
     function updatePreviousItinFields() {
     const selected = document.querySelector(
@@ -1038,6 +1226,8 @@ function updateReasonFields() {
         previousItinFields.classList.add("hidden");
         clearInputs(previousItinFields);
     }
+
+    validatePreviousItin();
 }
 
     previousItinRadios.forEach(radio => {
@@ -1046,6 +1236,9 @@ function updateReasonFields() {
             updatePreviousItinFields
         );
     });
+
+    itinInput.addEventListener("input", validatePreviousItin);
+    irsnInput.addEventListener("input", validatePreviousItin);
 
     updatePreviousItinFields();
 </script>

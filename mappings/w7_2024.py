@@ -94,7 +94,7 @@ W7_FIELDS = {
     "delegate_court_guardian": "c1_13[2]",
 
     # Acceptance Agent
-    "agent_date": "f1_42[0]",
+    "agent_phone": "f1_42[0]",
     "agent_fax": "f1_43[0]",
     "agent_name_title": "f1_44[0]",
     "agent_company": "f1_45[0]",

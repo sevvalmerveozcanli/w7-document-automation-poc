@@ -103,6 +103,7 @@ def generate_w7(
     # Application
     application_type,
     reason,
+    include_reason_h=False,
 
     reason_d_relationship="",
     reason_e_name="",
@@ -165,7 +166,7 @@ def generate_w7(
     delegate_relationship="",
 
     # Acceptance Agent
-    agent_date="",
+    agent_phone="",
     agent_fax="",
     agent_name_title="",
     agent_company="",
@@ -211,41 +212,30 @@ def generate_w7(
 
     set_checkbox(form_data, reason_key)
 
-    set_text(
-        form_data,
-        "reason_d_relationship",
-        reason_d_relationship,
+    reason_h_selected = reason in {"a", "h"} or (
+        reason == "f" and include_reason_h
     )
 
-    set_text(
-        form_data,
-        "reason_e_name",
-        reason_e_name,
-    )
+    if reason_h_selected and reason != "h":
+        set_checkbox(form_data, "reason_h")
 
-    set_text(
-        form_data,
-        "reason_e_ssn_itin",
-        reason_e_ssn_itin,
-    )
+    if reason == "d":
+        set_text(
+            form_data,
+            "reason_d_relationship",
+            reason_d_relationship,
+        )
 
-    set_text(
-        form_data,
-        "reason_h_details",
-        reason_h_details,
-    )
+    if reason in {"d", "e"}:
+        set_text(form_data, "reason_e_name", reason_e_name)
+        set_text(form_data, "reason_e_ssn_itin", reason_e_ssn_itin)
 
-    set_text(
-        form_data,
-        "treaty_country",
-        treaty_country,
-    )
+    if reason_h_selected:
+        set_text(form_data, "reason_h_details", reason_h_details)
 
-    set_text(
-        form_data,
-        "treaty_article",
-        treaty_article,
-    )
+    if reason in {"a", "f"}:
+        set_text(form_data, "treaty_country", treaty_country)
+        set_text(form_data, "treaty_article", treaty_article)
 
     # ==================================================
     # NAME
@@ -432,13 +422,7 @@ def generate_w7(
     # ACCEPTANCE AGENT
     # ==================================================
 
-    if agent_date:
-        set_text(
-            form_data,
-            "agent_date",
-            normalize_date(agent_date),
-        )
-
+    set_text(form_data, "agent_phone", agent_phone)
     set_text(form_data, "agent_fax", agent_fax)
     set_text(form_data, "agent_name_title", agent_name_title)
     set_text(form_data, "agent_company", agent_company)

@@ -36,9 +36,17 @@ async def home(request: Request):
 @app.post("/generate")
 async def generate_pdf(request: Request):
 
-    form = await request.form()
+    submitted_form = await request.form()
+    form = {
+        key: value.strip()
+        for key, value in submitted_form.items()
+        if isinstance(value, str)
+    }
 
     errors = validate_w7_form(form)
+
+    if len(form) != len(submitted_form):
+        errors.append("File uploads are not supported.")
 
     if errors:
         return templates.TemplateResponse(
@@ -60,6 +68,7 @@ async def generate_pdf(request: Request):
 
         application_type=form.get("application_type", "new"),
         reason=form.get("reason", "b"),
+        include_reason_h=form.get("reason_f_exception") == "yes",
 
         reason_d_relationship=form.get(
             "reason_d_relationship", ""
@@ -208,8 +217,8 @@ async def generate_pdf(request: Request):
             "delegate_relationship", ""
         ),
 
-        agent_date=form.get(
-            "agent_date", ""
+        agent_phone=form.get(
+            "agent_phone", ""
         ),
 
         agent_fax=form.get(
