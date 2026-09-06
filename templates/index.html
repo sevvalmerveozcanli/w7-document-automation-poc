@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W-7 Form Filler</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        header {
+            background: #183b63;
+            color: white;
+            padding: 18px 28px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 28px auto;
+            padding: 0 18px 40px;
+        }
+
+        .intro {
+            background: white;
+            padding: 18px 22px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #dbe3ec;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #dbe3ec;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #edf3f9;
+            padding: 14px 18px;
+            font-weight: bold;
+            font-size: 17px;
+            color: #183b63;
+        }
+
+        .section-body {
+            padding: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px 11px;
+            border: 1px solid #c7d2df;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #296ec6;
+            box-shadow: 0 0 0 2px rgba(41, 110, 198, 0.12);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: normal;
+            margin: 0;
+        }
+
+        .radio-group input {
+            width: auto;
+        }
+
+        .conditional {
+            margin-top: 14px;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px dashed #c8d4e1;
+            border-radius: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 26px;
+        }
+
+        button {
+            background: #2468b4;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 13px 28px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d5798;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #667085;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 800px) {
+            .grid,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>W-7 Form Filler</h1>
+    <p>IRS Form W-7 (Rev. December 2024) - Document Automation PoC</p>
+</header>
+
+<div class="container">
+{% if errors %}
+<div id="error-box" style="
+    background:#fff2f2;
+    border:1px solid #e5a3a3;
+    color:#9b1c1c;
+    padding:14px 18px;
+    border-radius:8px;
+    margin-bottom:18px;
+">
+    <strong>Please correct the following errors:</strong>
+
+    <ul>
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+    <div class="intro">
+        <strong>Proof of Concept</strong>
+        <p>
+            Enter applicant information below. The system maps the submitted data
+            directly into the official IRS W-7 PDF form fields.
+        </p>
+    </div>
+
+    <form method="post" action="/generate">
+
+        <!-- 1 -->
+        <div class="section">
+            <div class="section-header">
+                1. Application Type & Reason
+            </div>
+
+            <div class="section-body">
+
+                <div class="grid-2">
+                    <div>
+                        <label>Application Type</label>
+
+                        <div class="radio-group">
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="application_type"
+                                    value="new"
+                                    checked
+                                >
+                                Apply for a new ITIN
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="application_type"
+                                    value="renew"
+                                >
+                                Renew an existing ITIN
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>Reason for submitting Form W-7</label>
+
+                        <select name="reason" id="reason">
+                            <option value="a">a - Tax treaty benefit</option>
+                            <option value="b" selected>b - Filing a U.S. federal tax return</option>
+                            <option value="c">c - U.S. resident alien filing return</option>
+                            <option value="d">d - Dependent of U.S. citizen/resident alien</option>
+                            <option value="e">e - Spouse of U.S. citizen/resident alien</option>
+                            <option value="f">f - Student, professor or researcher</option>
+                            <option value="g">g - Dependent/spouse holding U.S. visa</option>
+                            <option value="h">h - Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="reason-d-fields" class="conditional hidden">
+                    <div class="grid">
+                        <div class="full">
+                            <label>Relationship</label>
+                            <input
+                                type="text"
+                                name="reason_d_relationship"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reason-e-fields" class="conditional hidden">
+                    <div class="grid">
+                        <div>
+                            <label>Name</label>
+                            <input
+                                type="text"
+                                name="reason_e_name"
+                            >
+                        </div>
+
+                        <div>
+                            <label>SSN / ITIN</label>
+                            <input
+                                type="text"
+                                name="reason_e_ssn_itin"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reason-h-fields" class="conditional hidden">
+                    <label>Other reason details</label>
+                    <input
+                        type="text"
+                        name="reason_h_details"
+                    >
+                </div>
+
+                <div class="grid-2" style="margin-top:16px;">
+                    <div>
+                        <label>Treaty Country</label>
+                        <input
+                            type="text"
+                            name="treaty_country"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Treaty Article Number</label>
+                        <input
+                            type="text"
+                            name="treaty_article"
+                        >
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="section">
+            <div class="section-header">
+                2. Name
+            </div>
+
+            <div class="section-body">
+
+                <div class="grid">
+                    <div>
+                        <label>First Name</label>
+                        <input
+                            type="text"
+                            name="first_name"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label>Middle Name</label>
+                        <input
+                            type="text"
+                            name="middle_name"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Last Name</label>
+                        <input
+                            type="text"
+                            name="last_name"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="grid" style="margin-top:16px;">
+                    <div>
+                        <label>Birth First Name</label>
+                        <input
+                            type="text"
+                            name="birth_first_name"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Birth Middle Name</label>
+                        <input
+                            type="text"
+                            name="birth_middle_name"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Birth Last Name</label>
+                        <input
+                            type="text"
+                            name="birth_last_name"
+                        >
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="section">
+            <div class="section-header">
+                3. Applicant's Mailing Address
+            </div>
+
+            <div class="section-body grid-2">
+
+                <div>
+                    <label>Street Address</label>
+                    <input
+                        type="text"
+                        name="mailing_street"
+                    >
+                </div>
+
+                <div>
+                    <label>City / State / Province / Country / ZIP</label>
+                    <input
+                        type="text"
+                        name="mailing_city_country_postal"
+                    >
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="section">
+            <div class="section-header">
+                4. Foreign (non-U.S.) Address
+            </div>
+
+            <div class="section-body grid-2">
+
+                <div>
+                    <label>Street Address</label>
+                    <input
+                        type="text"
+                        name="foreign_street"
+                    >
+                </div>
+
+                <div>
+                    <label>City / State / Province / Country / Postal Code</label>
+                    <input
+                        type="text"
+                        name="foreign_city_country_postal"
+                    >
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="section">
+            <div class="section-header">
+                5. Birth Information
+            </div>
+
+            <div class="section-body">
+
+                <div class="grid">
+
+                    <div>
+                        <label>Date of Birth</label>
+                        <input
+                            type="date"
+                            name="date_of_birth"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Country of Birth</label>
+                        <input
+                            type="text"
+                            name="country_of_birth"
+                        >
+                    </div>
+
+                    <div>
+                        <label>City and State / Province</label>
+                        <input
+                            type="text"
+                            name="birth_city_state"
+                        >
+                    </div>
+
+                </div>
+
+                <div style="margin-top:16px;">
+                    <label>Gender</label>
+
+                    <div class="radio-group">
+                        <label>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value="male"
+                            >
+                            Male
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="gender"
+                                value="female"
+                            >
+                            Female
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="section">
+            <div class="section-header">
+                6. Other Information
+            </div>
+
+            <div class="section-body grid">
+
+                <div>
+                    <label>Country / Countries of Citizenship</label>
+                    <input
+                        type="text"
+                        name="citizenship"
+                    >
+                </div>
+
+                <div>
+                    <label>Foreign Tax ID</label>
+                    <input
+                        type="text"
+                        name="foreign_tax_id"
+                    >
+                </div>
+
+                <div>
+                    <label>U.S. Visa Information</label>
+                    <input
+                        type="text"
+                        name="us_visa"
+                    >
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="section">
+            <div class="section-header">
+                7. Identification Document
+            </div>
+
+            <div class="section-body">
+
+                <div>
+                    <label>Document Type</label>
+
+                    <div class="radio-group">
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="document_type"
+                                value="passport"
+                                checked
+                            >
+                            Passport
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="document_type"
+                                value="driver_license"
+                            >
+                            Driver's License / State ID
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="document_type"
+                                value="uscis"
+                            >
+                            USCIS Documentation
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="document_type"
+                                value="other"
+                            >
+                            Other
+                        </label>
+
+                    </div>
+                </div>
+
+                <div id="other-document-field"
+                     class="conditional hidden">
+
+                    <label>Other Document Description</label>
+
+                    <input
+                        type="text"
+                        name="document_other_description"
+                    >
+                </div>
+
+                <div class="grid" style="margin-top:16px;">
+
+                    <div>
+                        <label>Issued By</label>
+                        <input
+                            type="text"
+                            name="document_issued_by"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Document Number</label>
+                        <input
+                            type="text"
+                            name="document_number"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Expiration Date</label>
+                        <input
+                            type="date"
+                            name="document_expiration_date"
+                        >
+                    </div>
+
+                </div>
+
+                <div style="margin-top:16px;">
+                    <label>Date of Entry into the United States</label>
+                    <input
+                        type="date"
+                        name="us_entry_date"
+                    >
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 8 -->
+        <div class="section">
+            <div class="section-header">
+                8. Previous ITIN / IRSN
+            </div>
+
+            <div class="section-body">
+
+                <label>Have you previously received an ITIN or IRSN?</label>
+
+                <div class="radio-group">
+                    <label>
+                        <input
+                            type="radio"
+                            name="previous_itin_status"
+                            value="no"
+                            checked
+                        >
+                        No / Don't know
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="previous_itin_status"
+                            value="yes"
+                        >
+                        Yes
+                    </label>
+                </div>
+
+                <div
+                    id="previous-itin-fields"
+                    class="conditional hidden"
+                >
+
+                    <div class="grid-2">
+
+                        <div>
+                            <label>ITIN</label>
+                            <input
+                                type="text"
+                                name="itin"
+                                placeholder="912-34-5678"
+                            >
+                        </div>
+
+                        <div>
+                            <label>IRSN</label>
+                            <input
+                                type="text"
+                                name="irsn"
+                            >
+                        </div>
+
+                    </div>
+
+                    <div class="grid" style="margin-top:16px;">
+
+                        <div>
+                            <label>Previous First Name</label>
+                            <input
+                                type="text"
+                                name="previous_first_name"
+                            >
+                        </div>
+
+                        <div>
+                            <label>Previous Middle Name</label>
+                            <input
+                                type="text"
+                                name="previous_middle_name"
+                            >
+                        </div>
+
+                        <div>
+                            <label>Previous Last Name</label>
+                            <input
+                                type="text"
+                                name="previous_last_name"
+                            >
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 9 -->
+        <div class="section">
+            <div class="section-header">
+                9. College / University / Company
+            </div>
+
+            <div class="section-body grid">
+
+                <div>
+                    <label>Name</label>
+                    <input
+                        type="text"
+                        name="institution_name"
+                    >
+                </div>
+
+                <div>
+                    <label>City and State</label>
+                    <input
+                        type="text"
+                        name="institution_city_state"
+                    >
+                </div>
+
+                <div>
+                    <label>Length of Stay</label>
+                    <input
+                        type="text"
+                        name="length_of_stay"
+                    >
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 10 -->
+        <div class="section">
+            <div class="section-header">
+                10. Sign / Delegate Information
+            </div>
+
+            <div class="section-body">
+
+                <div class="grid-2">
+
+                    <div>
+                        <label>Phone Number</label>
+                        <input
+                            type="text"
+                            name="phone_number"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Name of Delegate</label>
+                        <input
+                            type="text"
+                            name="delegate_name"
+                        >
+                    </div>
+
+                </div>
+
+                <div style="margin-top:16px;">
+
+                    <label>Delegate Relationship</label>
+
+                    <div class="radio-group">
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="delegate_relationship"
+                                value="parent"
+                            >
+                            Parent
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="delegate_relationship"
+                                value="power_of_attorney"
+                            >
+                            Power of Attorney
+                        </label>
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="delegate_relationship"
+                                value="court_guardian"
+                            >
+                            Court-appointed Guardian
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 11 -->
+        <div class="section">
+            <div class="section-header">
+                11. Acceptance Agent Information
+            </div>
+
+            <div class="section-body">
+
+                <div class="grid">
+
+                    <div>
+                        <label>Date</label>
+                        <input
+                            type="date"
+                            name="agent_date"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Fax</label>
+                        <input
+                            type="text"
+                            name="agent_fax"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Name and Title</label>
+                        <input
+                            type="text"
+                            name="agent_name_title"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Company</label>
+                        <input
+                            type="text"
+                            name="agent_company"
+                        >
+                    </div>
+
+                    <div>
+                        <label>EIN</label>
+                        <input
+                            type="text"
+                            name="agent_ein"
+                        >
+                    </div>
+
+                    <div>
+                        <label>PTIN</label>
+                        <input
+                            type="text"
+                            name="agent_ptin"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Office Code</label>
+                        <input
+                            type="text"
+                            name="agent_office_code"
+                        >
+                    </div>
+
+                </div>
+
+                <p class="note">
+                    Signature fields are intentionally left for human review/signature.
+                </p>
+
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit">
+                Generate W-7 PDF
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    const reasonSelect = document.getElementById("reason");
+
+    const reasonD = document.getElementById("reason-d-fields");
+    const reasonE = document.getElementById("reason-e-fields");
+    const reasonH = document.getElementById("reason-h-fields");
+    const errorBox = document.getElementById("error-box");
+
+if (errorBox) {
+    document.querySelectorAll("input, select, textarea").forEach(field => {
+        field.addEventListener("input", () => {
+            errorBox.style.display = "none";
+        });
+
+        field.addEventListener("change", () => {
+            errorBox.style.display = "none";
+        });
+    });
+}
+    function clearInputs(container) {
+    container.querySelectorAll("input, select, textarea").forEach(input => {
+        if (input.type === "radio" || input.type === "checkbox") {
+            input.checked = false;
+        } else {
+            input.value = "";
+        }
+    });
+}
+
+
+function updateReasonFields() {
+    const value = reasonSelect.value;
+
+    // Reason D
+    if (value === "d") {
+        reasonD.classList.remove("hidden");
+    } else {
+        reasonD.classList.add("hidden");
+        clearInputs(reasonD);
+    }
+
+    // Reason E
+    if (value === "e") {
+        reasonE.classList.remove("hidden");
+    } else {
+        reasonE.classList.add("hidden");
+        clearInputs(reasonE);
+    }
+
+    // Reason H
+    if (value === "h") {
+        reasonH.classList.remove("hidden");
+    } else {
+        reasonH.classList.add("hidden");
+        clearInputs(reasonH);
+    }
+}
+
+    reasonSelect.addEventListener("change", updateReasonFields);
+
+    updateReasonFields();
+
+
+    const documentRadios =
+        document.querySelectorAll('input[name="document_type"]');
+
+    const otherDocumentField =
+        document.getElementById("other-document-field");
+
+   function updateDocumentFields() {
+    const selected = document.querySelector(
+        'input[name="document_type"]:checked'
+    );
+
+    const isOther = selected && selected.value === "other";
+
+    if (isOther) {
+        otherDocumentField.classList.remove("hidden");
+    } else {
+        otherDocumentField.classList.add("hidden");
+        clearInputs(otherDocumentField);
+    }
+}
+
+    documentRadios.forEach(radio => {
+        radio.addEventListener(
+            "change",
+            updateDocumentFields
+        );
+    });
+
+    updateDocumentFields();
+
+
+    const previousItinRadios =
+        document.querySelectorAll(
+            'input[name="previous_itin_status"]'
+        );
+
+    const previousItinFields =
+        document.getElementById(
+            "previous-itin-fields"
+        );
+
+    function updatePreviousItinFields() {
+    const selected = document.querySelector(
+        'input[name="previous_itin_status"]:checked'
+    );
+
+    const shouldShow = selected && selected.value === "yes";
+
+    if (shouldShow) {
+        previousItinFields.classList.remove("hidden");
+    } else {
+        previousItinFields.classList.add("hidden");
+        clearInputs(previousItinFields);
+    }
+}
+
+    previousItinRadios.forEach(radio => {
+        radio.addEventListener(
+            "change",
+            updatePreviousItinFields
+        );
+    });
+
+    updatePreviousItinFields();
+</script>
+
+</body>
+</html>
