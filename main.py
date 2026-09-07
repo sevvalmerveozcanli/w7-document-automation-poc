@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
 
+from services.country_service import COUNTRIES
 from services.pdf_service import generate_w7
 from services.validation_service import validate_w7_form
 
@@ -24,12 +25,24 @@ GENERATED_DIR = BASE_DIR / "generated"
 GENERATED_DIR.mkdir(exist_ok=True)
 
 
+def combine_address_parts(form: dict, prefix: str, legacy_field: str) -> None:
+    parts = [
+        form.get(f"{prefix}_city", ""),
+        form.get(f"{prefix}_state_province", ""),
+        form.get(f"{prefix}_country", ""),
+        form.get(f"{prefix}_postal_code", ""),
+    ]
+
+    if any(parts):
+        form[legacy_field] = ", ".join(part for part in parts if part)
+
+
 @app.get("/")
 async def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={}
+        context={"countries": COUNTRIES}
     )
 
 
@@ -37,15 +50,31 @@ async def home(request: Request):
 async def generate_pdf(request: Request):
 
     submitted_form = await request.form()
+    has_file_upload = any(
+        not isinstance(value, str)
+        for _, value in submitted_form.multi_items()
+    )
     form = {
         key: value.strip()
         for key, value in submitted_form.items()
         if isinstance(value, str)
     }
 
+    citizenship_values = [
+        value.strip()
+        for value in submitted_form.getlist("citizenship")
+        if isinstance(value, str) and value.strip()
+    ]
+
+    if citizenship_values:
+        form["citizenship"] = "; ".join(dict.fromkeys(citizenship_values))
+
+    combine_address_parts(form, "mailing", "mailing_city_country_postal")
+    combine_address_parts(form, "foreign", "foreign_city_country_postal")
+
     errors = validate_w7_form(form)
 
-    if len(form) != len(submitted_form):
+    if has_file_upload:
         errors.append("File uploads are not supported.")
 
     if errors:
@@ -55,6 +84,7 @@ async def generate_pdf(request: Request):
             context={
                 "errors": errors,
                 "form_data": dict(form),
+                "countries": COUNTRIES,
             },
             status_code=400,
         )
@@ -148,7 +178,9 @@ async def generate_pdf(request: Request):
             "foreign_tax_id", ""
         ),
 
-        us_visa=form.get("us_visa", ""),
+        visa_type=form.get("visa_type", ""),
+        visa_number=form.get("visa_number", ""),
+        visa_expiration_date=form.get("visa_expiration_date", ""),
 
         document_type=form.get(
             "document_type", ""

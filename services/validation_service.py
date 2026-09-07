@@ -1,24 +1,8 @@
 import re
-from datetime import date, datetime
+from datetime import date
 
-
-def parse_date(value: str) -> datetime | None:
-    if not value:
-        return None
-
-    formats = [
-        "%Y-%m-%d",
-        "%m/%d/%Y",
-        "%m-%d-%Y",
-    ]
-
-    for date_format in formats:
-        try:
-            return datetime.strptime(value, date_format)
-        except ValueError:
-            continue
-
-    return None
+from services.country_service import COUNTRY_NAMES
+from services.date_service import parse_date
 
 
 def is_valid_date(value: str) -> bool:
@@ -46,7 +30,8 @@ def validate_w7_form(form) -> list[str]:
         "first_name": "First Name",
         "last_name": "Last Name",
         "mailing_street": "Mailing Street Address",
-        "mailing_city_country_postal": "Mailing City / State / Country / ZIP",
+        "mailing_city": "Mailing City / Town",
+        "mailing_country": "Mailing Country",
         "date_of_birth": "Date of Birth",
         "country_of_birth": "Country of Birth",
         "birth_city_state": "Birth City and State / Province",
@@ -60,6 +45,48 @@ def validate_w7_form(form) -> list[str]:
     for field_name, label in required_fields.items():
         if not get_text(form, field_name):
             errors.append(f"{label} is required.")
+
+    structured_foreign_address = any(
+        get_text(form, field_name)
+        for field_name in {
+            "foreign_street",
+            "foreign_city",
+            "foreign_state_province",
+            "foreign_country",
+            "foreign_postal_code",
+        }
+    )
+
+    if structured_foreign_address:
+        foreign_required_fields = {
+            "foreign_street": "Foreign Street Address",
+            "foreign_city": "Foreign City / Town",
+            "foreign_country": "Foreign Address Country",
+        }
+
+        for field_name, label in foreign_required_fields.items():
+            if not get_text(form, field_name):
+                errors.append(f"{label} is required when a foreign address is entered.")
+
+    country_fields = {
+        "Mailing Country": get_text(form, "mailing_country"),
+        "Foreign Address Country": get_text(form, "foreign_country"),
+        "Country of Birth": get_text(form, "country_of_birth"),
+        "Treaty Country": get_text(form, "treaty_country"),
+    }
+
+    for label, value in country_fields.items():
+        if value and value not in COUNTRY_NAMES:
+            errors.append(f"{label} must be selected from the country list.")
+
+    citizenships = [
+        country.strip()
+        for country in get_text(form, "citizenship").split(";")
+        if country.strip()
+    ]
+
+    if any(country not in COUNTRY_NAMES for country in citizenships):
+        errors.append("Citizenship countries must be selected from the country list.")
 
     application_type = get_text(form, "application_type")
     reason = get_text(form, "reason")
@@ -189,6 +216,7 @@ def validate_w7_form(form) -> list[str]:
 
     date_fields = {
         "Date of Birth": get_text(form, "date_of_birth"),
+        "Visa Expiration Date": get_text(form, "visa_expiration_date"),
         "Document Expiration Date": get_text(form, "document_expiration_date"),
         "U.S. Entry Date": get_text(form, "us_entry_date"),
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,6 +62,20 @@
             font-weight: bold;
             font-size: 17px;
             color: #183b63;
+        }
+
+        .section.country-overflow-section {
+            position: relative;
+            z-index: 10;
+            overflow: visible;
+        }
+
+        .section.country-overflow-section .section-header {
+            border-radius: 9px 9px 0 0;
+        }
+
+        .section.country-overflow-section:focus-within {
+            z-index: 100;
         }
 
         .section-body {
@@ -141,6 +155,144 @@
             align-items: flex-start;
         }
 
+        .searchable-country .country-search {
+            margin-bottom: 6px;
+            background: #f8fafc;
+        }
+
+        .country-multi {
+            position: relative;
+            z-index: 1;
+        }
+
+        .country-multi:focus-within {
+            z-index: 101;
+        }
+
+        .country-multi-control {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 5px 38px 5px 7px;
+            border: 1px solid #c7d2df;
+            border-radius: 6px;
+            background: white;
+            cursor: text;
+            position: relative;
+        }
+
+        .country-multi-control:focus-within {
+            border-color: #296ec6;
+            box-shadow: 0 0 0 2px rgba(41, 110, 198, 0.12);
+        }
+
+        .country-multi-chips {
+            display: contents;
+        }
+
+        .country-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            max-width: 100%;
+            padding: 4px 7px;
+            border-radius: 5px;
+            background: #e8f1fb;
+            color: #183b63;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .country-chip-remove,
+        .country-multi-toggle {
+            width: auto;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: #385674;
+            line-height: 1;
+        }
+
+        .country-chip-remove {
+            font-size: 14px;
+        }
+
+        .country-chip-remove:hover,
+        .country-multi-toggle:hover {
+            background: transparent;
+            color: #9b1c1c;
+        }
+
+        .country-multi-search {
+            flex: 1 1 150px;
+            width: auto;
+            min-width: 110px;
+            padding: 5px 3px;
+            border: 0;
+            box-shadow: none;
+        }
+
+        .country-multi-search:focus {
+            border: 0;
+            box-shadow: none;
+        }
+
+        .country-multi-toggle {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15px;
+        }
+
+        .country-multi-dropdown {
+            position: absolute;
+            z-index: 1000;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid #c7d2df;
+            border-radius: 7px;
+            background: white;
+            box-shadow: 0 12px 28px rgba(31, 41, 55, 0.16);
+        }
+
+        .country-option {
+            display: block;
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 5px;
+            background: white;
+            color: #1f2937;
+            text-align: left;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .country-option:hover,
+        .country-option:focus {
+            background: #edf3f9;
+            color: #183b63;
+        }
+
+        .country-option[aria-selected="true"] {
+            background: #dceaf8;
+            color: #183b63;
+            font-weight: 600;
+        }
+
+        .country-empty {
+            margin: 0;
+            padding: 10px;
+            color: #667085;
+            font-size: 13px;
+        }
+
         .conditional {
             margin-top: 14px;
             padding: 14px;
@@ -190,6 +342,76 @@
 </head>
 
 <body>
+
+{% macro country_select(field_name, required=False, multiple=False) %}
+{% if multiple %}
+<div
+    class="country-multi"
+    data-country-multi
+    data-required="{{ 'true' if required else 'false' }}"
+>
+    <div
+        class="country-multi-control"
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls="{{ field_name }}-country-list"
+    >
+        <div class="country-multi-chips"></div>
+        <input
+            type="search"
+            class="country-multi-search"
+            placeholder="Search countries..."
+            aria-label="Search citizenship countries"
+            autocomplete="off"
+        >
+        <button
+            type="button"
+            class="country-multi-toggle"
+            aria-label="Toggle country list"
+        >&#9662;</button>
+    </div>
+    <div
+        id="{{ field_name }}-country-list"
+        class="country-multi-dropdown hidden"
+        role="listbox"
+        aria-multiselectable="true"
+    >
+        {% for country in countries %}
+            <button
+                type="button"
+                class="country-option"
+                data-country="{{ country }}"
+                role="option"
+                aria-selected="false"
+            >{{ country }}</button>
+        {% endfor %}
+        <p class="country-empty hidden">No countries found.</p>
+    </div>
+    <input type="hidden" name="{{ field_name }}">
+</div>
+{% else %}
+<div class="searchable-country" data-country-select>
+    <input
+        type="search"
+        class="country-search"
+        placeholder="Search countries..."
+        aria-label="Search countries"
+        autocomplete="off"
+    >
+    <select
+        name="{{ field_name }}"
+        {% if required %}required{% endif %}
+        {% if multiple %}multiple size="6"{% endif %}
+    >
+        <option value="">Select a country</option>
+        {% for country in countries %}
+            <option value="{{ country }}">{{ country }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+{% endmacro %}
 
 <header>
     <h1>W-7 Form Filler</h1>
@@ -367,10 +589,7 @@
                             <label>
                                 Treaty Country <span class="required-marker">*</span>
                             </label>
-                            <input
-                                type="text"
-                                name="treaty_country"
-                            >
+                            {{ country_select("treaty_country") }}
                         </div>
 
                         <div>
@@ -461,22 +680,37 @@
 
             <div class="section-body grid-2">
 
-                <div>
+                <div class="full">
                     <label>Street Address <span class="required-marker">*</span></label>
                     <input
-                         type="text"
-                         name="mailing_street"
-                         required
+                        type="text"
+                        name="mailing_street"
+                        required
                     >
                 </div>
 
                 <div>
-                    <label>City / State / Province / Country / ZIP <span class="required-marker">*</span></label>
+                    <label>City / Town <span class="required-marker">*</span></label>
                     <input
-                         type="text"
-                         name="mailing_city_country_postal"
-                         required
+                        type="text"
+                        name="mailing_city"
+                        required
                     >
+                </div>
+
+                <div>
+                    <label>State / Province</label>
+                    <input type="text" name="mailing_state_province">
+                </div>
+
+                <div>
+                    <label>Country <span class="required-marker">*</span></label>
+                    {{ country_select("mailing_country", required=True) }}
+                </div>
+
+                <div>
+                    <label>ZIP / Postal Code</label>
+                    <input type="text" name="mailing_postal_code">
                 </div>
 
             </div>
@@ -490,8 +724,11 @@
 
             <div class="section-body grid-2">
 
-                <div>
-                    <label>Street Address</label>
+                <div class="full">
+                    <label>
+                        Street Address
+                        <span class="required-marker foreign-address-required hidden">*</span>
+                    </label>
                     <input
                         type="text"
                         name="foreign_street"
@@ -499,11 +736,32 @@
                 </div>
 
                 <div>
-                    <label>City / State / Province / Country / Postal Code</label>
+                    <label>
+                        City / Town
+                        <span class="required-marker foreign-address-required hidden">*</span>
+                    </label>
                     <input
                         type="text"
-                        name="foreign_city_country_postal"
+                        name="foreign_city"
                     >
+                </div>
+
+                <div>
+                    <label>State / Province</label>
+                    <input type="text" name="foreign_state_province">
+                </div>
+
+                <div>
+                    <label>
+                        Country
+                        <span class="required-marker foreign-address-required hidden">*</span>
+                    </label>
+                    {{ country_select("foreign_country") }}
+                </div>
+
+                <div>
+                    <label>Postal Code</label>
+                    <input type="text" name="foreign_postal_code">
                 </div>
 
             </div>
@@ -522,19 +780,19 @@
                     <div>
                         <label>Date of Birth <span class="required-marker">*</span></label>
                         <input
-                             type="date"
+                             type="text"
                              name="date_of_birth"
+                             data-date-input
+                             inputmode="numeric"
+                             placeholder="DD.MM.YYYY"
+                             pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}"
                              required
                         >
                     </div>
 
                     <div>
                         <label>Country of Birth <span class="required-marker">*</span></label>
-                        <input
-                             type="text"
-                             name="country_of_birth"
-                             required
-                        >
+                        {{ country_select("country_of_birth", required=True) }}
                     </div>
 
                     <div>
@@ -578,7 +836,7 @@
         </div>
 
         <!-- 6 -->
-        <div class="section">
+        <div class="section country-overflow-section">
             <div class="section-header">
                 6. Other Information
             </div>
@@ -587,11 +845,7 @@
 
                 <div>
                     <label>Country / Countries of Citizenship <span class="required-marker">*</span></label>
-                    <input
-                         type="text"
-                         name="citizenship"
-                         required
-                    >
+                    {{ country_select("citizenship", required=True, multiple=True) }}
                 </div>
 
                 <div>
@@ -603,10 +857,31 @@
                 </div>
 
                 <div>
-                    <label>U.S. Visa Information</label>
+                    <label>Visa Type</label>
                     <input
                         type="text"
-                        name="us_visa"
+                        name="visa_type"
+                        placeholder="B1/B2"
+                    >
+                </div>
+
+                <div>
+                    <label>Visa Number</label>
+                    <input
+                        type="text"
+                        name="visa_number"
+                    >
+                </div>
+
+                <div>
+                    <label>Visa Expiration Date</label>
+                    <input
+                        type="text"
+                        name="visa_expiration_date"
+                        data-date-input
+                        inputmode="numeric"
+                        placeholder="DD.MM.YYYY"
+                        pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}"
                     >
                 </div>
 
@@ -704,8 +979,12 @@
                     <div>
                         <label>Expiration Date <span class="required-marker">*</span></label>
                         <input
-                             type="date"
+                             type="text"
                              name="document_expiration_date"
+                             data-date-input
+                             inputmode="numeric"
+                             placeholder="DD.MM.YYYY"
+                             pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}"
                              required
                         >
                     </div>
@@ -715,8 +994,12 @@
                 <div style="margin-top:16px;">
                     <label>Date of Entry into the United States</label>
                     <input
-                        type="date"
+                        type="text"
                         name="us_entry_date"
+                        data-date-input
+                        inputmode="numeric"
+                        placeholder="DD.MM.YYYY"
+                        pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}"
                     >
                 </div>
 
@@ -1039,9 +1322,226 @@
 
         if (field.type === "radio" || field.type === "checkbox") {
             field.checked = field.value === value;
+        } else if (field.multiple) {
+            const selectedValues = new Set(value.split(";").map(item => item.trim()));
+            Array.from(field.options).forEach(option => {
+                option.selected = selectedValues.has(option.value);
+            });
         } else {
-            field.value = value;
+            field.value = field.matches("[data-date-input]")
+                ? formatDateForDisplay(value)
+                : value;
         }
+    });
+
+    function formatDateForDisplay(value) {
+        let match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+        if (match) {
+            return `${match[3]}.${match[2]}.${match[1]}`;
+        }
+
+        match = value.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})$/);
+
+        if (match) {
+            return `${match[2]}.${match[1]}.${match[3]}`;
+        }
+
+        return value;
+    }
+
+    function normalizeCountrySearch(value) {
+        return value
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("en");
+    }
+
+    document.querySelectorAll("[data-country-select]").forEach(component => {
+        const search = component.querySelector(".country-search");
+        const select = component.querySelector("select");
+
+        function filterCountries() {
+            const query = normalizeCountrySearch(search.value.trim());
+
+            Array.from(select.options).forEach(option => {
+                const matches = !option.value || normalizeCountrySearch(option.value)
+                    .includes(query);
+                const visible = matches || option.selected;
+
+                option.hidden = !visible;
+                option.style.display = visible ? "" : "none";
+            });
+        }
+
+        if (select.value) {
+            search.value = select.value;
+        }
+
+        search.addEventListener("input", filterCountries);
+        search.addEventListener("focus", () => search.select());
+        select.addEventListener("change", () => {
+            search.value = select.value;
+            filterCountries();
+        });
+    });
+
+    document.querySelectorAll("[data-country-multi]").forEach(component => {
+        const control = component.querySelector(".country-multi-control");
+        const search = component.querySelector(".country-multi-search");
+        const toggle = component.querySelector(".country-multi-toggle");
+        const dropdown = component.querySelector(".country-multi-dropdown");
+        const chips = component.querySelector(".country-multi-chips");
+        const hiddenInput = component.querySelector('input[type="hidden"]');
+        const emptyMessage = component.querySelector(".country-empty");
+        const options = Array.from(component.querySelectorAll(".country-option"));
+        const required = component.dataset.required === "true";
+        const selectedCountries = new Set(
+            hiddenInput.value
+                .split(";")
+                .map(country => country.trim())
+                .filter(Boolean)
+        );
+
+        function openDropdown() {
+            dropdown.classList.remove("hidden");
+            control.setAttribute("aria-expanded", "true");
+        }
+
+        function closeDropdown() {
+            dropdown.classList.add("hidden");
+            control.setAttribute("aria-expanded", "false");
+        }
+
+        function filterOptions() {
+            const query = normalizeCountrySearch(search.value.trim());
+            let visibleCount = 0;
+
+            options.forEach(option => {
+                const visible = normalizeCountrySearch(option.dataset.country)
+                    .includes(query);
+
+                option.classList.toggle("hidden", !visible);
+                visibleCount += visible ? 1 : 0;
+            });
+
+            emptyMessage.classList.toggle("hidden", visibleCount > 0);
+        }
+
+        function syncSelection(notify = false) {
+            hiddenInput.value = Array.from(selectedCountries).join("; ");
+            chips.replaceChildren();
+
+            selectedCountries.forEach(country => {
+                const chip = document.createElement("span");
+                const label = document.createElement("span");
+                const removeButton = document.createElement("button");
+
+                chip.className = "country-chip";
+                label.textContent = country;
+                removeButton.type = "button";
+                removeButton.className = "country-chip-remove";
+                removeButton.textContent = "x";
+                removeButton.setAttribute("aria-label", `Remove ${country}`);
+                removeButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    selectedCountries.delete(country);
+                    syncSelection(true);
+                });
+
+                chip.append(label, removeButton);
+                chips.append(chip);
+            });
+
+            options.forEach(option => {
+                option.setAttribute(
+                    "aria-selected",
+                    selectedCountries.has(option.dataset.country) ? "true" : "false"
+                );
+            });
+
+            search.setCustomValidity(
+                required && selectedCountries.size === 0
+                    ? "Select at least one citizenship country."
+                    : ""
+            );
+
+            if (notify) {
+                hiddenInput.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        }
+
+        control.addEventListener("click", () => {
+            openDropdown();
+            search.focus();
+        });
+
+        toggle.addEventListener("click", event => {
+            event.stopPropagation();
+
+            if (dropdown.classList.contains("hidden")) {
+                openDropdown();
+                search.focus();
+            } else {
+                closeDropdown();
+            }
+        });
+
+        search.addEventListener("focus", openDropdown);
+        search.addEventListener("input", () => {
+            openDropdown();
+            filterOptions();
+        });
+        search.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                closeDropdown();
+                search.blur();
+            } else if (event.key === "ArrowDown") {
+                const firstVisibleOption = options.find(
+                    option => !option.classList.contains("hidden")
+                );
+
+                if (firstVisibleOption) {
+                    event.preventDefault();
+                    firstVisibleOption.focus();
+                }
+            }
+        });
+        search.addEventListener("invalid", openDropdown);
+
+        options.forEach(option => {
+            option.addEventListener("click", () => {
+                const country = option.dataset.country;
+
+                if (selectedCountries.has(country)) {
+                    selectedCountries.delete(country);
+                } else {
+                    selectedCountries.add(country);
+                }
+
+                syncSelection(true);
+                search.value = "";
+                filterOptions();
+                search.focus();
+            });
+        });
+
+        document.addEventListener("click", event => {
+            if (!component.contains(event.target)) {
+                closeDropdown();
+            }
+        });
+
+        component.addEventListener("focusout", () => {
+            setTimeout(() => {
+                if (!component.contains(document.activeElement)) {
+                    closeDropdown();
+                }
+            });
+        });
+
+        syncSelection();
+        filterOptions();
     });
 
 if (errorBox) {
@@ -1067,7 +1567,9 @@ function clearInputs(container) {
 
 function setRequired(container, required) {
     container.querySelectorAll("input, select, textarea").forEach(input => {
-        input.required = required;
+        if (!input.classList.contains("country-search")) {
+            input.required = required;
+        }
     });
 }
 
@@ -1076,6 +1578,30 @@ function toggleRequiredMarkers(selector, visible) {
         marker.classList.toggle("hidden", !visible);
     });
 }
+
+const foreignAddressFields = Array.from(document.querySelectorAll(
+    '[name="foreign_street"], [name="foreign_city"], [name="foreign_state_province"], ' +
+    '[name="foreign_country"], [name="foreign_postal_code"]'
+));
+const foreignAddressRequiredFields = document.querySelectorAll(
+    '[name="foreign_street"], [name="foreign_city"], [name="foreign_country"]'
+);
+
+function updateForeignAddressRequirements() {
+    const hasForeignAddress = foreignAddressFields.some(field => field.value.trim());
+
+    foreignAddressRequiredFields.forEach(field => {
+        field.required = hasForeignAddress;
+    });
+    toggleRequiredMarkers(".foreign-address-required", hasForeignAddress);
+}
+
+foreignAddressFields.forEach(field => {
+    field.addEventListener("input", updateForeignAddressRequirements);
+    field.addEventListener("change", updateForeignAddressRequirements);
+});
+
+updateForeignAddressRequirements();
 
 function updateReasonFields() {
     const selectedReason = document.querySelector('input[name="reason"]:checked');

@@ -1,50 +1,22 @@
-from datetime import datetime
 from pathlib import Path
 import re
 
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import NameObject, BooleanObject
+from pypdf.generic import NameObject, BooleanObject, NumberObject
 
 from mappings.w7_2024 import W7_FIELDS, W7_CHECKBOX_VALUES
+from services.date_service import format_date_for_pdf
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATE_PATH = BASE_DIR / "fw7.pdf"
+PDF_DATE_FIELDS = {
+    W7_FIELDS["date_of_birth"],
+    W7_FIELDS["document_expiration_date"],
+    W7_FIELDS["us_entry_date"],
+}
 
-
-
-def normalize_date(value: str) -> str:
-    """
-    Web formundan veya manuel girişten gelen tarihi
-    IRS PDF'nin beklediği MMDDYYYY formatına dönüştürür.
-
-    Desteklenen örnekler:
-    1995-06-15
-    06/15/1995
-    06-15-1995
-    """
-    if not value:
-        return ""
-
-    value = value.strip()
-
-    formats = [
-        "%Y-%m-%d",
-        "%m/%d/%Y",
-        "%m-%d-%Y",
-    ]
-
-    for date_format in formats:
-        try:
-            parsed = datetime.strptime(value, date_format)
-            return parsed.strftime("%m%d%Y")
-        except ValueError:
-            continue
-
-    raise ValueError(
-        "Geçersiz tarih formatı. "
-        "YYYY-MM-DD veya MM/DD/YYYY kullanın."
-    )
+normalize_date = format_date_for_pdf
 
 
 def split_itin(value: str):
@@ -137,7 +109,9 @@ def generate_w7(
     # Other information
     citizenship="",
     foreign_tax_id="",
-    us_visa="",
+    visa_type="",
+    visa_number="",
+    visa_expiration_date="",
 
     # Identification
     document_type="",
@@ -184,6 +158,13 @@ def generate_w7(
     if acroform_ref:
         acroform = acroform_ref.get_object()
         acroform[NameObject("/NeedAppearances")] = BooleanObject(True)
+
+    for page in writer.pages:
+        for annotation_ref in page.get("/Annots", []):
+            annotation = annotation_ref.get_object()
+
+            if annotation.get("/T") in PDF_DATE_FIELDS:
+                annotation[NameObject("/MaxLen")] = NumberObject(10)
 
     form_data = {}
 
@@ -295,7 +276,16 @@ def generate_w7(
 
     set_text(form_data, "citizenship", citizenship)
     set_text(form_data, "foreign_tax_id", foreign_tax_id)
-    set_text(form_data, "us_visa", us_visa)
+    visa_parts = [visa_type, visa_number]
+
+    if visa_expiration_date:
+        visa_parts.append(format_date_for_pdf(visa_expiration_date))
+
+    set_text(
+        form_data,
+        "us_visa",
+        ", ".join(part.strip() for part in visa_parts if part and part.strip()),
+    )
 
     # ==================================================
     # IDENTIFICATION DOCUMENT
