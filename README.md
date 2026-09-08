@@ -29,21 +29,24 @@ Instead of manually entering information into the PDF, the application:
 ## Project Structure
 
 ```text
-w7-automation-poc/
+w7-document-automation-poc/
+│
+├── data/
+│   └── countries.json
 │
 ├── mappings/
 │   └── w7_2024.py
 │
 ├── services/
+│   ├── country_service.py
+│   ├── date_service.py
 │   ├── pdf_service.py
 │   └── validation_service.py
 │
 ├── templates/
 │   └── index.html
 │
-├── generated/
-│
-├── dev_tools/
+├── tests/
 │
 ├── fw7.pdf
 ├── main.py
